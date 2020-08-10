@@ -301,3 +301,301 @@ pair_sum([1, 2, -1, -1], 0)      # => #<Set: {[-1, 1]}>
 pair_sum([1, 2, -1, -1, -2], 0)  # => #<Set: {[-1, 1], [-2, 2]}>
 pair_sum([1, 2, -1, -1, -2], 1)  # => #<Set: {[-1, 2]}>
 pair_sum([1, 2, -1, -1, -2], -1) # => #<Set: {[-2, 1]}>
+
+def matrix_region_sum(matrix, top_left_coords, bottom_right_coords)
+  total_sum = 0
+
+  (top_left_coords[0]..bottom_right_coords[0]).each do |row_idx|
+    (top_left_coords[1]..bottom_right_coords[1]).each do |col_idx|
+      total_sum += matrix[row_idx][col_idx]
+    end
+  end
+
+  total_sum
+end
+
+def merge_sort(array)
+  # already sorted
+  return array if array.count < 2
+
+  middle = array.count / 2
+  left, right = array.take(middle), array.drop(middle)
+
+  sorted_left, sorted_right = merge_sort(left), merge_sort(right)
+
+  merge(sorted_left, sorted_right)
+end
+
+def merge(left, right)
+  merged_array = []
+  until left.empty? || right.empty?
+    merged_array <<
+      ((left.first < right.first) ? (left.shift) : (right.shift))
+  end
+
+  merged_array + left + right
+end
+
+def merge(left, right)
+  merged_array = []
+  i, j = 0, 0
+  until i == left.length || j == right.length
+    if left[i] > right[j]
+      merged_array << right[j]
+      j += 1
+    else
+      merged_array << left[i]
+        i += 1
+    end
+  end
+  merged_array + left.drop(i) + right.drop(j)
+end #time complexity for merge is O(N)
+
+def binary_search(array, target)
+  return nil if array.count == 0
+
+  midpoint = array.length / 2
+  case target <=> array[midpoint]
+  when -1
+    binary_search(array.take(midpoint), target)
+  when 0
+    midpoint #return implied
+  when 1
+    subproblem_answer =
+      binary_search(array.drop(midpoint + 1), target)
+    subproblem_answer.nil? ? nil : (midpoint + 1) + subproblem_answer
+  end
+end
+
+# Given a list of numbers in an array, replace all the numbers with the product of all other numbers. 
+# Do this in O(n) time without using division.
+
+def productify(arr)
+  products = Array.new(arr.length, 1)
+
+  lower_prod = 1
+  0.upto(arr.size - 1) do |i|
+    products[i] = products[i] * lower_prod
+    lower_prod = lower_prod * arr[i]
+  end
+
+  upper_prod = 1
+  (arr.size - 1).downto(0) do |i|
+    products[i] = products[i] * upper_prod
+    upper_prod = upper_prod * arr[i]
+  end
+
+  products
+end 
+
+def subsets(arr)
+  return [[]] if arr.empty?
+
+  val = arr[0]
+  subs = subsets(arr.drop(1))
+  new_subs = subs.map { |sub| sub + [val] }
+
+  subs + new_subs
+end
+
+# subsets(['a', 'b', 'c'])
+# subs_without_a => [[], ['c'], ['b'], ['c', 'b']]
+# subs_with_a => [['a'], ['c', 'a'], ['b', 'a'], ['c', 'b', 'a']]
+# all_subs = subs_without_a + subs_with_a
+
+# We will finish with 2 n subsets, so at minimum our time complexity will be `O(2n)`.
+
+def longest_palindrome(string)
+  best_palindrome_start = 0
+  best_palindrome_len = 0
+
+  0.upto(string.length - 1).each do |start|
+    # micro-optimization: don't look at substrings shorter than best
+    # palindrome.
+    len = best_palindrome_len + 1
+    while start + len <= string.length
+      if is_palindrome?(string, start, len)
+        best_palindrome_start, best_palindrome_len = start, len
+      end
+
+      len += 1
+    end
+  end
+
+  [best_palindrome_start, best_palindrome_start + best_palindrome_len - 1]
+end
+
+def is_palindrome?(string, start, len)
+  len.times do |i|
+    if string[start + i] != string[(start + len - 1) - i]
+      return false
+    end
+  end
+
+  true
+end
+
+# This will take O(N3) cubic time
+
+def longest_palindrome(str)
+    longest_length = 0
+    longest_begin = 0
+
+    str.length.times do |i|
+        stretch = 0
+        # expand out from char i, and see if there's an expanding palindrome
+        # (for odd palindrome lengths)
+        loop do
+            break unless both_in_range?(i + stretch, i - stretch, str)
+
+            if str[i - stretch] == str[i + stretch]
+                this_pal_length = stretch * 2 + 1
+                if this_pal_length > longest_length
+                    longest_length = this_pal_length
+                    longest_begin = i - stretch
+                end
+            else
+              break
+            end
+
+            stretch += 1
+        end
+
+        # now check centering around the spaces between chars
+        # (for even palindrome lengths)
+        stretch = 0
+        loop do
+            break unless both_in_range?(i + stretch + 1, i - stretch, str)
+
+            if str[i - stretch] == str[i + stretch + 1]
+                this_pal_length = stretch * 2 + 2
+                if this_pal_length > longest_length
+                    longest_length = this_pal_length
+                    longest_begin = i - stretch
+                end
+            else
+              break
+            end
+
+            stretch += 1
+        end
+    end
+
+    str.slice(longest_begin, longest_length)
+end
+
+def both_in_range?(i1, i2, str)
+    [i1, i2].all? { |idx| idx.between?(0, str.length - 1) }
+end
+
+# O^2
+
+# Ruby implementation of Manacher's linear-time algorithm for finding
+# the longest palindromic substring in a string.
+#
+# Adapted from http://www.akalin.cx/longest-palindrome-linear-time.
+
+require 'test/unit'
+
+class Manacher
+  class << self
+    def find_longest(string)
+      string_length = string.length
+      l = []
+      i = 0
+      pal_len = 0
+
+      while i < string_length do
+        found_match = false
+
+        if i > pal_len && string[i - pal_len - 1] == string[i]
+          pal_len += 2
+          i += 1
+
+          next
+        end
+
+        l.push(pal_len)
+
+        s = l.length - 2
+        e = s - pal_len
+        s.downto(e + 1) do |j|
+          d = j - e - 1
+
+          if l[j] == d
+            pal_len = d
+            found_match = true
+            break
+          end
+
+          l.push([d, l[j]].min)
+        end
+
+        unless found_match
+          pal_len = 1
+          i += 1
+        end
+      end
+
+      l.push(pal_len)
+
+      l_len = l.length
+      s = l_len - 2
+      e = s - (2 * string_length + 1 - l_len)
+
+      s.downto(e + 1) do |i|
+        d = i - e - 1
+        l.push([d, l[i]].min)
+      end
+
+      l
+    end
+  end
+end
+
+def intersection1(arr1, arr2)
+  arr1.uniq.select { |el| arr2.include?(el) }
+end
+
+def intersection2(arr1, arr2)
+  arr1, arr2, idx1, idx2 = arr1.sort, arr2.sort, 0, 0
+
+  intersection = []
+  while idx1 < arr1.length && idx2 < arr2.length
+    case arr1[idx1] <=> arr2[idx2]
+    when -1
+      idx1 += 1
+    when 0
+      intersection << arr1[idx1]
+      idx1 += 1
+      idx2 += 1
+    when 1
+      idx2 += 1
+    end
+  end
+  intersection
+end #nlogn; sorting is NlogN and comparing is O(N)
+
+def intersection3(arr1, arr2)
+  intersection = []
+  set_1 = arr1.to_set
+  arr2.each do |el|
+    intersection << el if set_1.include?(el)
+  end
+
+  intersection
+end #O(N)
+
+def common_subsets(arr1, arr2)
+  subsets(intersection3(arr1, arr2))
+end
+
+def subsets(arr)
+  return [[]] if arr.empty?
+
+  val = arr[0]
+  subs = subsets(arr.drop(1))
+  new_subs = subs.map { |sub| sub + [val] }
+
+  subs + new_subs
+end
