@@ -807,3 +807,373 @@ def look_and_say(array)
 
   output
 end
+
+def which_missing_1(arr)
+  arr.sort.each_with_index do |el, idx|
+    return idx if el != idx
+  end
+
+  arr.length
+end
+
+def which_missing_2(arr)
+  found = {}
+  arr.each do |el|
+    found[el] = true
+  end
+
+  0.upto(arr.length).each do |el|
+    return el unless found[el]
+  end
+end
+
+def which_missing_3(arr)
+  total = (arr.length + 1) * arr.length / 2
+  actual_sum = arr.inject(&:+)
+  total - actual_sum
+end
+
+def k_closest_stars(sequence, k)
+  # This we pass our MaxHeap a proc to calculate distance
+  heap = BinaryMaxHeap.new do |el1, el2|
+    distance1 = Math.sqrt(el1[0]**2 + el1[1]**2 + el1[2]**2)
+    distance2 = Math.sqrt(el2[0]**2 + el2[1]**2 + el2[2]**2)
+    distance1 <=> distance2
+  end
+
+  # Start off the heap with k items
+  k.times do
+    heap.push(sequence.pop)
+  end
+
+  # Until we reach the end, push on new items from our sequence and extract the max
+  while sequence.length > 0
+    heap.push(sequence.pop)
+    heap.extract
+  end
+
+  # We can return an array of k closest stars
+  k_closest = []
+
+  until heap.empty?
+    k_closest.push(heap.extract)
+  end
+
+  k_closest
+end
+
+class MaxStack
+  def initialize
+    @values = []
+  end
+
+  def push(value)
+    if @values.empty?
+      @values << [value, value]
+    else
+      new_max = [self.max, value].max
+      @values << [value, new_max]
+    end
+  end
+
+  def pop
+    value, max = @values.pop
+
+    value
+  end
+
+  def max
+    @values.last[1]
+  end
+end
+
+class StackQueue
+  def initialize
+    @in, @out = [], []
+  end
+
+  def enqueue(value)
+    @in << value
+  end
+
+  def dequeue
+    if @out.empty?
+      @out << @in.pop until @in.empty?
+    end
+
+    @out.pop
+  end
+end
+
+class MinMaxStack
+  def initialize
+    @entries = []
+  end
+
+  def length
+    @entries.length
+  end
+
+  def push(value)
+    if @entries.empty?
+      @entries << { value: value, min: value, max: value }
+    else
+      @entries << {
+        value: value,
+        max: [@entries.last[:max], value].max,
+        min: [@entries.last[:min], value].min
+      }
+    end
+  end
+
+  def pop
+    (@entries.pop)[:value]
+  end
+
+  def max
+    @entries.empty? ? nil : (@entries.last)[:max]
+  end
+
+  def min
+    @entries.empty? ? nil : (@entries.last)[:min]
+  end
+end
+
+class MinMaxStackQueue
+  def initialize
+    @in, @out = MinMaxStack.new, MinMaxStack.new
+  end
+
+  def enqueue(value)
+    @in.push(value)
+  end
+
+  def dequeue
+    if @out.length == 0
+      @out.push(@in.pop) until @in.length == 0
+    end
+
+    @out.pop
+  end
+
+  def length
+    @in.length + @out.length
+  end
+
+  def max
+    maxes = []
+    maxes << @in.max if @in.length > 0
+    maxes << @out.max if @out.length > 0
+
+    maxes.max
+  end
+
+  def min
+    mins = []
+    mins << @in.min if @in.length > 0
+    mins << @out.min if @out.length > 0
+
+    mins.min
+  end
+end
+
+def windowed_max_range(array, window_size)
+  max_range = nil
+
+  q = MinMaxStackQueue.new
+  array.each do |el|
+    q.enqueue(el)
+    if max_range.nil? || (q.max - q.min) > max_range
+      max_range = (q.max - q.min)
+    end
+
+    if q.length == window_size
+      q.dequeue
+    end
+  end
+
+  max_range
+end
+
+def file_list(hash)
+  files = []
+
+  hash.each do |item, nested_item|
+    if nested_item.is_a?(Hash)
+      folder = item
+      nested_files = file_list(nested_item)
+      nested_files.each { |file| files << "#{folder}/#{file}" }
+    else
+      files << item
+    end
+  end
+
+  files
+end
+
+def find_missing_number(array1, array2)
+  array1.reduce(:+) - array2.reduce(:+)
+end
+
+# time: O(n), space: O(1)
+def is_shuffle?(str1, str2, str3)
+  return false unless str1.length + str2.length == str3.length
+
+  idx1, idx2, idx3 = 0, 0, 0
+  while idx3 < str3.length
+    if str1[idx1] == str3[idx3]
+      idx1 += 1
+      idx3 += 1
+    elsif str2[idx2] == str3[idx3]
+      idx2 += 1
+      idx3 += 1
+    else
+      return false
+    end
+  end
+
+  true
+end #NO REPEATS
+
+# O(2**n): `str3.length == n + 1` requires twice the work of
+# `str3.length == n`
+def is_shuffle?(str1, str2, str3)
+  return str1.empty? && str2.empty? if str3.empty?
+
+  if str1[0] == str3[0]
+    return true if is_shuffle?(str1[1..-1], str2, str3[1..-1])
+  end
+
+  if str2[0] == str3[0]
+    return true if is_shuffle?(str1, str2[1..-1], str3[1..-1])
+  end
+
+  false
+end #with repeats
+
+def is_shuffle?(str1, str2, str3)
+  candidates = [[0, 0]]
+
+  until candidates.empty?
+    str1_used_len, str2_used_len = *(candidates.shift)
+    str3_used_len = str1_used_len + str2_used_len
+
+    if str3_used_len == str3.length
+      return true
+    end
+
+    if str1[str1_used_len] == str3[str3_used_len]
+      candidates << [str1_used_len + 1, str2_used_len]
+    end
+    if str2[str2_used_len] == str3[str3_used_len]
+      candidates << [str1_used_len, str2_used_len + 1]
+    end
+  end
+
+  false
+end
+
+def is_shuffle?(str1, str2, str3)
+  seen_candidates = Hash.new(false)
+  candidates = [[0, 0]]
+
+  until candidates.empty?
+    str1_used_len, str2_used_len = *(candidates.shift)
+    str3_used_len = str1_used_len + str2_used_len
+
+    if str3_used_len == str3.length
+      return true
+    end
+
+    if str1[str1_used_len] == str3[str3_used_len]
+      new_candidate = [str1_used_len + 1, str2_used_len]
+      if !seen_candidates[new_candidate]
+        candidates << new_candidate
+        seen_candidates[new_candidate] = true
+      end
+    end
+    if str2[str2_used_len] == str3[str3_used_len]
+      new_candidate = [str1_used_len, str2_used_len + 1]
+      if !seen_candidates[new_candidate]
+        candidates << new_candidate
+        seen_candidates[new_candidate] = true
+      end
+    end
+  end
+
+  false
+end
+
+def binary(num)
+  result = []
+
+  until num == 0
+    result.unshift(num % 2)
+    num /= 2
+  end
+
+  result.empty? ? "0" : result.join
+end
+
+def recursive_fac(num)
+  return num if num == 1
+  tail_rec(num - 1) * num
+end
+
+def tail_recursive_fac(num, prod = 1)
+  return prod if num == 1
+  return tail_recursive_fac(num - 1, prod * num)
+end
+
+def iterative_fac(num)
+  product = 1
+  2.upto(num) { |i| product *= i }
+
+  product
+end
+
+# O(n**2)
+def max_unique_psub(str)
+  psub = str[str.length - 1]
+
+  (str.length - 2).downto(0) do |i|
+    next if str[i] < psub[0]
+    # CAREFUL: this takes O(n) in the inner loop to copy the contents of
+    # psub to create the new string.
+    psub = str[i] + psub
+  end
+
+  psub
+end
+
+# Slight rewriting that is O(n)
+def max_unique_psub(str)
+  psub_arr = [str[str.length - 1]]
+
+  (str.length - 2).downto(0) do |i|
+    next if str[i] < psub_arr.last
+    # this is amortized O(1) time.
+    psub_arr << str[i]
+  end
+
+  psub = psub_arr.reverse.join("")
+  psub
+end
+
+# O(n!)
+def permutations(arr)
+  return [[]] if arr.empty?
+
+  perms = []
+  arr.length.times do |i|
+    # Choose an element to be first
+    el = arr[i]
+    rest = arr.take(i) + arr.drop(i + 1)
+
+    # Find permutations of the rest, and tack the first `el` at front.
+    new_perms = permutations(rest).map { |perm| perm.unshift(el) }
+    perms.concat(new_perms)
+  end
+
+  perms
+end
