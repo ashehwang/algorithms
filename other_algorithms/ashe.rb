@@ -692,3 +692,118 @@ def can_win(array, index)
 
   false
 end
+
+def sort1(arr)
+  (1..(arr.length)).to_a
+end
+
+def sort2(arr, max_val)
+  counts = Array.new(max_val + 1, 0)
+  arr.each { |el| counts[el] += 1 }
+
+  arr = []
+  counts.each_index do |val|
+    counts[val].times { arr << val }
+  end
+  arr
+end
+
+def sort3(strings, length)
+  (length - 1).downto(0) do |i|
+    buckets = Array.new(26) { [] }
+    strings.each do |string|
+      letter = string[i]
+      buckets[letter.ord - "a".ord] << string
+    end
+
+    strings = []
+    buckets.each do |bucket|
+      bucket.each { |string| strings << string }
+    end
+  end
+
+  strings
+end
+
+sort3([`cat`, `car`, `bat`])
+
+# buckets after sorting by last letter
+buckets = [[], ... , [`car`], ..., [`cat`, `bat`],  ...]
+
+# strings after we join the buckets back together, now sorted by last letter
+strings = [`car`, `cat`, `bat`]
+
+# buckets after sorting by second to last letter - note that they retain their relative ordering by last letter in the buckets
+buckets = [[`car`, `cat`, `bat`], ..., []]
+
+# strings after we join the buckets back together, now sorted by last letter and second-to-last letter
+strings = [`car`, `cat`, `bat`]
+
+# lastly, buckets sorted by the first and most important letter
+buckets = [[], ..., [`bat`], [`car`, `cat`] ...]
+
+strings = [`bat`, `car`, `cat`]
+
+def weighted_random_index(arr)
+  total_sum = arr.inject(:+)
+  value = rand(total_sum)
+
+  cumulative_sum = 0
+  arr.each_with_index do |el, i|
+    cumulative_sum += el
+    return i if value < cumulative_sum
+  end
+end
+
+def move_zeros(array)
+  current_index = 0
+  num_zeros = 0
+
+  while current_index < (array.length - num_zeros)
+    current_value = array[current_index]
+
+    if current_value != 0
+      current_index += 1
+      next
+    end
+
+    back = array.length - 1 - num_zeros
+    array[current_index], array[back] =
+      array[back], array[current_index]
+    num_zeros += 1
+
+    # we can't add one to current_index since `back` may have
+    # contained a zero and we don't know it.
+  end
+
+  # Return the array
+  array
+end
+
+def move_zeros2(arr)
+  left, right = 0, arr.size - 1
+  loop do
+    left  += 1 until arr[left]  == 0 || left == right
+    right -= 1 until arr[right] != 0 || left == right
+    break if left == right
+    arr[left], arr[right] = arr[right], arr[left]
+  end
+  arr
+end
+
+def look_and_say(array)
+  return [] if array.empty?
+
+  output = [[1, array[0]]]
+
+  (1...array.length).each do |idx|
+    el = array[idx]
+    if el == output.last[1]
+      output.last[0] += 1
+    else
+      output << [1, el]
+    end
+  end
+
+  output
+end
