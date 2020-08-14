@@ -600,4 +600,95 @@ def subsets(arr)
   subs + new_subs
 end
 
-#ATT 6052949988 - a
+#ATT 6052949988A
+
+def intersection1(arr1, arr2)
+  arr1.uniq.select { |el| arr2.include?(el) }
+end #ON^2
+
+def intersection2(arr1, arr2)
+  arr1, arr2, idx1, idx2 = arr1.sort, arr2.sort, 0, 0
+
+  intersection = []
+  while idx1 < arr1.length && idx2 < arr2.length
+    case arr1[idx1] <=> arr2[idx2]
+    when -1
+      idx1 += 1
+    when 0
+      intersection << arr1[idx1]
+      idx1 += 1
+      idx2 += 1
+    when 1
+      idx2 += 1
+    end
+  end
+  intersection
+end #NlogN
+
+def intersection3(arr1, arr2)
+  intersection = []
+  set_1 = arr1.to_set
+  arr2.each do |el|
+    intersection << el if set_1.include?(el)
+  end
+
+  intersection
+end #ON
+
+def common_subsets(arr1, arr2)
+  subsets(intersection3(arr1, arr2))
+end
+
+def subsets(arr)
+  return [[]] if arr.empty?
+
+  val = arr[0]
+  subs = subsets(arr.drop(1))
+  new_subs = subs.map { |sub| sub + [val] }
+
+  subs + new_subs
+end
+
+# can_win?([1, 0, 1], 0)
+# => true
+
+# can_win?([1, 2, 0], 0)
+# => false
+
+def can_win?(arr, pos = 0, seen = {})
+  return false if !pos.between?(0, arr.length - 1) || seen[pos]
+  return true if arr[pos].zero?
+
+  seen[pos] = true
+
+  can_win?(arr, pos + arr[pos], seen) ||
+  can_win?(arr, pos - arr[pos], seen)
+end
+
+# A non-recursive solution.
+def can_win(array, index)
+  positions_to_try = [index]
+  visited_positions = Array.new(array.length, false)
+  visited_positions[index] = true
+
+  until positions_to_try.empty?
+    # We should probably use a queue for this.
+    position = positions_to_try.shift
+    value = array[position]
+
+    if value == 0
+      return true
+    end
+
+    [position + value, position - value].each do |pos|
+      next if visited_positions[pos]
+      next if (pos < 0 || array.length <= pos)
+
+      positions_to_try << pos
+      # This insures we don't add a position twice to our queue.
+      visited_positions[pos] = true
+    end
+  end
+
+  false
+end
