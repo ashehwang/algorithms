@@ -1177,3 +1177,80 @@ def permutations(arr)
 
   perms
 end
+
+def cyclic1?(first_link)
+  set = Set.new
+
+  current_link = first_link
+  until current_link.nil?
+    # if list is cyclic, must loop back on itself eventually
+    return true if set.include?(current_link)
+    set << current_link
+
+    current_link = current_link.next
+  end
+
+  false
+end
+
+def cyclic2?(first_link)
+  slow_runner = first_link
+  fast_runner = first_link
+
+  while true
+    2.times do
+      fast_runner = fast_runner.next
+      return false if fast_runner.nil?
+      return true if fast_runner == slow_runner
+    end
+
+    slow_runner = slow_runner.next
+  end
+end
+
+def converge?(a, b)
+  difference = find_difference(a, b)
+
+  a_runner = a
+  b_runner = b
+
+  if difference > 0
+    difference.times do
+      b_runner = b_runner.next
+    end
+  else
+    (-difference).times do
+      a_runner = a_runner.next
+    end
+  end
+
+  until a_runner.nil?
+    return true if a_runner == b_runner
+    a_runner = a_runner.next
+    b_runner = b_runner.next
+  end
+
+  false
+end
+
+def find_difference(a, b)
+  difference = 0
+
+  a_runner = a
+  b_runner = b
+
+  until a_runner.nil? && b_runner.nil?
+    if a_runner.nil?
+      difference += 1
+      b_runner = b_runner.next
+    elsif b_runner.nil?
+      difference -= 1
+      a_runner = a_runner.next
+    else
+      a_runner = a_runner.next
+      b_runner = b_runner.next
+    end
+  end
+
+  difference
+end
