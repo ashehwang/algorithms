@@ -1254,3 +1254,52 @@ def find_difference(a, b)
 
   difference
 end
+
+# O(log(n)) if BST is balanced
+def next_largest(node)
+  if node.right
+    # find smallest node to the right
+    return left_most_node(node.right)
+  end
+
+  # no nodes to the right; climb up
+  until true
+    parent_node = node.parent
+    if parent_node.nil?
+      # at the top of the tree, and nothing bigger to the right.
+      return nil
+    elsif parent_node.left == node
+      # parent is bigger than us
+      return parent_node
+    else
+      # parent is smaller, keep climbing.
+      node = parent_node
+    end
+  end
+end
+
+def left_most_node(node)
+  # keep going down and to the left
+  node = node.left until node.left.nil?
+
+  node
+end
+
+        5
+      /   \
+    2       7
+  /   \   /   \
+1      3 6     8
+
+left_most_node(node_5)
+=> node_6
+
+        5
+      /   \
+    2       7
+  /   \   /   \
+1      3 6     8
+
+left_most_node(node_3)
+=> node_5
+
