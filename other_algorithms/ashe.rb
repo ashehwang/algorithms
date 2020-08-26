@@ -1376,3 +1376,33 @@ def print_spiral(a)
 
   result
 end
+
+ def duplicates(arr)
+   values = Set.new
+   copies = Set.new
+
+   arr.each do |value|
+    if values.include?(value)
+     copies << value
+    else
+     values << value
+    end
+   end
+
+   return copies
+end
+
+def key_chance(hash)
+  total = hash.values.inject(&:+)
+  selection = rand(total)
+
+  sum = 0
+  hash.each do |k, v|
+    sum += v
+    if selection < sum
+      return k
+    end
+  end
+end
+
+# For the hash {:a => 1, :b => 2, :c => 3}, the chance of returning :c is 1/2, :b is 1/3, and :a is 1/6.
