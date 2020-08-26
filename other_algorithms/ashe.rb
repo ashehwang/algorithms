@@ -1316,3 +1316,63 @@ def is_bst?(node, min = nil, max = nil)
   is_bst?(node.left, min, node.value) && is_bst?(node.right, node.value, max)
 end
 
+def rand7
+  while true
+    # construct a random number (0...5**2)
+    # (0, 5, 10, 15, 20) + (0, 1, 2, 3, 4)
+    num = 5 * rand5 + rand5
+    return (num % 7) if num < 21
+
+    # we reject 21, 22, 23, 24; we'll choose another number in that
+    # case.
+  end
+end
+
+def rand7
+  result = 0
+  result += (rand5 < 3 ? 0 : 1)
+  result += (rand5 < 3 ? 0 : 2)
+  result += (rand5 < 3 ? 0 : 4)
+  result
+end
+
+def sqroot(num, candidates = nil)  
+  return num if num == 1    
+  candidates ||= (0..num / 2).to_a
+  middle = candidates.length / 2
+  case num <=> (candidates[middle] * candidates[middle])
+  when -1
+      sqroot(num, candidates.take(middle))
+  when 0
+      middle
+  when 1
+      sub_answer = sqroot(num, candidates.drop(middle + 1))
+      (sub_answer.nil?) ? nil : (middle + 1) + sub_answer
+  end
+end
+
+def print_spiral(a)
+  a = a.deep_dup(1)
+  result = []
+
+  while true
+    break if a.length == 0 || a[0].length == 0
+
+    # remove the first row
+    result.concat(a.shift)
+    break if a.length == 0 || a[0].length == 0
+
+    # remove the right side
+    a.each { |row| result << row.pop }
+    break if a.length == 0 || a[0].length == 0
+
+    # remove the bottom row
+    result.concat(a.pop.reverse)
+    break if a.length == 0 || a[0].length == 0
+
+    # remove the left side
+    a.reverse.each { |row| result << row.shift }
+  end
+
+  result
+end
